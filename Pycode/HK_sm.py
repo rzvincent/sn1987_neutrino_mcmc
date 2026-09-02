@@ -6,9 +6,10 @@ if osc:
 else:
     import SignalRate_2d as s2d     # without oscillation
 
-path_sample = r'./Data/samples_HK_osc.npy' if osc else r'./Data/samples_HK.npy'
-
+import os
 import numpy as np
+
+path_sample = r'./Bin/calculation/samples_HK_osc.npy' if osc else r'./Bin/calculation/samples_HK.npy'
 from scipy.optimize import minimize, root_scalar
 import definition as df
 from Simulation_Spectrum import time_limit
@@ -122,7 +123,8 @@ if __name__ == '__main__':
     log_lambda_95CL = np.array(results)
     print(log_lambda_95CL)
     
-    # (Assuming 'osc', 'path_ret_osc', and 'path_ret' are defined in your environment)
+    # Ensure output directories exist
+    os.makedirs(os.path.dirname(path_ret_osc), exist_ok=True)
     if osc:
         np.save(path_ret_osc, np.array([log_m_vals, log_lambda_95CL]).T)
     else:
@@ -135,4 +137,7 @@ if __name__ == '__main__':
     plt.ylabel('log10(lambda_nu)')
     plt.xlim(0, 3)
     plt.ylim(-10, -2)
-    plt.savefig('./Data/plots/HK_sm_2d_limit.png', dpi=300)
+    
+    plot_path = './Data/plots/HK_sm_2d_limit.png'
+    os.makedirs(os.path.dirname(plot_path), exist_ok=True)
+    plt.savefig(plot_path, dpi=300)

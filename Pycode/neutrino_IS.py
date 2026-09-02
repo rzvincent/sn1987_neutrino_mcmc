@@ -6,7 +6,7 @@ coefficient = 3.89379e-10      # Unit transformation from eV^-2 to cm^2
 Distance_SN1987 = df.Distance_SN1987        # Distance of SN 1987A in unit cm
 T_nu = df.T_nu
 
-# gamma_phi devided by m_phi
+# gamma_phi divided by m_phi
 def omega(lambda_chi = 1):
 
     return lambda_chi**2/ (16*np.pi)

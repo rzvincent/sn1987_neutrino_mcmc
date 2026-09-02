@@ -1,7 +1,7 @@
-When batch codes to clutter:
+When running batch jobs on a cluster:
 
 'Simulation_Spectrum.py'
-Add 'from setup import index' at the top 
+Add 'from run_batch import index' at the top 
 Replace 'file_str = effective_data_file[0]' with 'file_str = effective_data_file[index]' 
 Replace file name "filename=r"../2D_trim_data/"+ file_str +"/nuspec.1.xg" 
 

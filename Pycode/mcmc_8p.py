@@ -1,5 +1,6 @@
 # Using Pagliaroli09 model
 
+import os
 import numpy as np
 import SignalRate_8p
 from scipy import integrate
@@ -34,15 +35,15 @@ class ModelSettings:
 # adjustable
 # =========================
 
-    # 1/6 parameters you want to fix: alternative for 'R_c', 'T_c', 'tau_c', 'M_a', 'T_a', 'tau_a', 'm_phi', 'lambda_nu', devided by comma.   
+    # 1/6 parameters you want to fix: alternative for 'R_c', 'T_c', 'tau_c', 'M_a', 'T_a', 'tau_a', 'm_phi', 'lambda_nu', divided by comma.   
     fix_param: list = field(default_factory=lambda: [])
 
-    # 2/6 percison (>=16), steps (> discards), discards (>1000) and thin (multiples of 5)
+    # 2/6 precision (>=16), steps (> discards), discards (>1000) and thin (multiples of 5)
     scale_factor: float = 1      
-    percision: int = 32   
-    steps, dicards, thin = 50000, 30000, 20
+    precision: int = 32   
+    steps, discards, thin = 50000, 30000, 20
 
-    # 3/6 detectors: alternative for 'K'(Kamiokande), 'B'(Baksan) and 'I'(IMB), devided by comma as well.
+    # 3/6 detectors: alternative for 'K'(Kamiokande), 'B'(Baksan) and 'I'(IMB), divided by comma as well.
     detector: list = field(default_factory=lambda: ['K', 'B', 'I'])
 
     # 4/6 initial value imported in mcmc
@@ -97,7 +98,7 @@ def _init_from_settings(cfg: ModelSettings):
     global PARAMS_ALL, BOUNDS_ALL, indexes_in, indexes_out, PARAMS, BOUNDS
     global fixed_values, initial
     global ranges_K, ranges_I, ranges_B
-    global scale_factor, percision
+    global scale_factor, precision
     global t_K, E_K, c_K, dE_K, B_K
     global t_I, E_I, c_I, dE_I, B_I
     global t_B, E_B, c_B, dE_B, B_B
@@ -120,8 +121,8 @@ def _init_from_settings(cfg: ModelSettings):
     ranges_B    = cfg.ranges_B
 
     scale_factor = cfg.scale_factor
-    percision    = cfg.percision
-    steps, discards, thin = cfg.steps, cfg.dicards, cfg.thin
+    precision    = cfg.precision
+    steps, discards, thin = cfg.steps, cfg.discards, cfg.thin
     # t_max, E_max = cfg.t_max, cfg.E_max
 
     path_figure = cfg.path_figure
@@ -175,7 +176,7 @@ def log_likelihood_K(theta):
 
         fun1_K = lambda x: SignalRate_8p.SR_K(t_K, x, c_K, *args_list) * Errors.Error_E(x, E_K, dE_K)
 
-        part1_K = df.gl3_integrate(SignalRate_8p.SR_K, ranges_K, percision, args=args_list)
+        part1_K = df.gl3_integrate(SignalRate_8p.SR_K, ranges_K, precision, args=args_list)
 
         # part2_K = integrate.quad_vec(fun1_K, E_min_K, data_limit()[1])[0]
 
@@ -203,7 +204,7 @@ def log_likelihood_I(theta):
 
         fun2_I = lambda x, c, t: SignalRate_8p.SR_I(t, x, c, *args_list)*Errors.Error_E(x, E_I, dE_I)
 
-        part1_I = df.gl3_integrate(SignalRate_8p.SR_I, ranges_I, percision, args=args_list)
+        part1_I = df.gl3_integrate(SignalRate_8p.SR_I, ranges_I, precision, args=args_list)
 
         # part2_I = np.clip(integrate.quad_vec(fun1_I, E_min_I , data_limit()[1])[0], 1e-100, None)
 
@@ -211,7 +212,7 @@ def log_likelihood_I(theta):
 
         part3_I = B_I/2
 
-        part4_I= df.gl2_integrate_vec(fun2_I, ((E_min_I, E_max), (-1,1)), t_I, percision)
+        part4_I= df.gl2_integrate_vec(fun2_I, ((E_min_I, E_max), (-1,1)), t_I, precision)
 
         ret_I = -0.9055*part1_I  + np.sum(0.035*part4_I) + np.sum(np.log(part3_I + part2_I))
     
@@ -229,7 +230,7 @@ def log_likelihood_B(theta):
 
         fun1_B = lambda x: SignalRate_8p.SR_B(t_B, x, c_B, *args_list)*Errors.Error_E(x, E_B, dE_B)
 
-        part1_B = df.gl3_integrate(SignalRate_8p.SR_B, ranges_B, percision, args=args_list)
+        part1_B = df.gl3_integrate(SignalRate_8p.SR_B, ranges_B, precision, args=args_list)
 
         # part2_B = integrate.quad_vec(fun1_B, E_min_B, data_limit()[1])[0]
 
@@ -305,7 +306,7 @@ if __name__ == '__main__':
 
     print('data from detector(s):', detector)
 
-    print('percision:', percision)
+    print('precision:', precision)
 
     print('saving path:',  path_str)
 
@@ -316,7 +317,7 @@ if __name__ == '__main__':
     if df.Seesaw_Inverse:
         print(r'Inverse is considered, \lambda_{\phi\nu} is constant')
     else:
-        print(r'Type-I seasaw considered, \lambda_\phi\nu depends on m_\nu, check again the priors')
+        print(r'Type-I seesaw considered, \lambda_\phi\nu depends on m_\nu, check again the priors')
 
     print(r'$m_\nu =$', df.m_nu, 'eV')
 
@@ -342,7 +343,8 @@ if __name__ == '__main__':
 
     print(flat_samples.shape)
 
-    # save_mcmc_result(flat_samples, path= path_chain)
+    # Ensure output directories exist before saving
+    os.makedirs(os.path.dirname(path_chain), exist_ok=True)
     np.save(path_chain, flat_samples)
 
     # print("best fit values: ")
@@ -353,16 +355,17 @@ if __name__ == '__main__':
         # print(labels[i] + "={0:.3f}".format(mcmc[1],mcmc[1]-q[0],mcmc[1]+q[1]))
         print(LABELS[i] + "={0:.3f}".format(mcmc[1]))
 
-    if not len(initial)-1:      # plot histgram for one dimentional parameter
+    if not len(initial)-1:      # plot histogram for one dimensional parameter
         plt.hist(flat_samples[:, 0], 100, color="k", histtype="step")
         plt.xlabel(r"$\theta_1$")
         plt.ylabel(r"$p(\theta_1)$")
         plt.gca().set_yticks([])
-    else:       # plot corner for more than one dimentional parameter
+    else:       # plot corner for more than one dimensional parameter
         fig = corner.corner(
             flat_samples, quantiles=[0.16, 0.5, 0.84],show_titles=True, title_kwargs={"fontsize": 12}, smooth = 1, 
             labels=LABELS, 
         )
 
+    os.makedirs(os.path.dirname(path_figure), exist_ok=True)
     plt.savefig(path_figure)
     plt.show()

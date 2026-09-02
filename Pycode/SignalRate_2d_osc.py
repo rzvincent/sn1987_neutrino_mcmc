@@ -195,7 +195,7 @@ if __name__ == '__main__':
     E_space = np.linspace(7, 40, 300)
 
 
-    plt.plot(E_space, SR_all(1, E_space, 0, *fix_0), 'k-', label = 'orginal')
+    plt.plot(E_space, SR_all(1, E_space, 0, *fix_0), 'k-', label = 'original')
     plt.plot(E_space, SR_all(1, E_space, 0,  *fix_1), 'r--', label = 'best fit')
     plt.plot(E_space, SR_all(1, E_space, 0, *fix_2), 'b-.', label = 'most attenuated')
 

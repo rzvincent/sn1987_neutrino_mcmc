@@ -308,8 +308,8 @@ def gl2_integrate_vec(f_vec, bounds, z, n=64, args=()):
     return val
 
 
-def g_integrate(Fun, lower_limit, upper_limit, percision=64, *args, **kwargs):  
-    gx, wx = leggauss(percision) 
+def g_integrate(Fun, lower_limit, upper_limit, precision=64, *args, **kwargs):  
+    gx, wx = leggauss(precision) 
 
     orig_shape = np.shape(upper_limit)           
     L, U = np.meshgrid(lower_limit, upper_limit) 

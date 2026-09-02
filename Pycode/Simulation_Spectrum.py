@@ -7,9 +7,10 @@ import matplotlib.gridspec as gridspec
 from scipy.special import gamma
 from scipy.integrate import quad
 from scipy.integrate import quad_vec
+import os
 import definition
 
-# from setup import index
+# from run_batch import index
 
 effective_data_file = ['15.01', '15.05', '16.43', '16.65', '16.99', '17.00', '17.07', '17.10', '17.40', '17.48', '17.50', '17.51', '17.83', '18.04', '18.05', '18.09', '18.10', '18.50', '19.02', '19.56', '19.83', '19.99']  
 # in unit of solar mass, corresponding to the 22 data files
@@ -22,6 +23,13 @@ filename_1= "./Bin/2D_trim_data/"+ file_str +"/nuspec.1.xg"   # r"../2D_trim_dat
 filename_2 = "./Bin/2D_trim_data/"+ file_str +"/nuspec.2.xg"
 
 def read_xg(filename):
+
+    if not os.path.exists(filename):
+        raise FileNotFoundError(
+            f"Required data file '{filename}' was not found.\n"
+            "Please download 'Bin.zip' from GitHub Releases and extract it "
+            "into the project root directory so that './Bin/2D_trim_data' exists."
+        )
 
     data = []
     current_time = None
@@ -65,8 +73,8 @@ energies_space_x = np.array(df_x["E"]).reshape(len(times_space_x), 12)
 Eflux_e = np.array(df_e["EdFdE"]).reshape(len(times_space_e), 12)
 flux_e = Eflux_e * 1e75 * 624150.9074461 / energies_space_e / (4 * np.pi * D**2)
 
-Elux_x = np.array(df_x["EdFdE"]).reshape(len(times_space_x), 12)
-flux_x = Elux_x * 1e75 * 624150.9074461 / energies_space_x / (4 * np.pi * D**2) / 4 
+Eflux_x = np.array(df_x["EdFdE"]).reshape(len(times_space_x), 12)
+flux_x = Eflux_x * 1e75 * 624150.9074461 / energies_space_x / (4 * np.pi * D**2) / 4 
 # Assuming x-flavor neutrinos are equally distributed among 4 flavors (nu_mu, nu_tau, anti-nu_mu, anti-nu_tau)
 
 grid_F_e = np.array([make_interp_spline(energies_space_e[i, :], flux_e[i, :], k=3)(E_space_2d) for i in range(len(times_space_e))])
